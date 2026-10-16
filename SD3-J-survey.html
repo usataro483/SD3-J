@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SD3-J 調査</title>
+  <link rel="stylesheet" href="assets/jspsych.css">
+  <script src="assets/jspsych.js"></script>
+  <script src="assets/plugin-survey-likert.js"></script>
+  <script src="assets/chart.umd.min.js"></script>
+  <style>
+    /* 画面全体と共通部品 */
+    :root {
+      color-scheme: light;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f7fb;
+      color: #1d2939;
+      font-family: "Noto Sans JP", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+    }
+
+    #jspsych-content {
+      max-width: 980px;
+    }
+
+    .card {
+      margin: 24px auto;
+      padding: 28px 32px;
+      background: #fff;
+      border: 1px solid #dce3ed;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px #243b5310;
+    }
+
+    .eyebrow {
+      color: #315da8;
+      font-size: .88rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+
+    h1 {
+      margin: 8px 0 16px;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+    }
+
+    h2 {
+      margin: 8px 0 16px;
+      font-size: 1.35rem;
+    }
+
+    p {
+      line-height: 1.8;
+    }
+
+    .muted {
+      color: #526277;
+      font-size: .94rem;
+    }
+
+    .jspsych-btn {
+      padding: 12px 22px;
+      background: #2659a8;
+      border: 0;
+      border-radius: 9px;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .jspsych-btn:hover {
+      background: #17437f;
+      color: #fff;
+    }
+
+    .jspsych-btn:focus-visible {
+      outline: 3px solid #f4b548;
+      outline-offset: 3px;
+    }
+
+    /* JsPsych の設問・選択肢 */
+    .jspsych-survey-likert-preamble {
+      text-align: left;
+    }
+
+    #jspsych-survey-likert-form .jspsych-survey-likert-statement {
+      box-sizing: border-box;
+      display: block;
+      margin: 16px 0 0;
+      padding: 16px 18px 4px;
+      background: #fff;
+      border: 1px solid #dce3ed;
+      border-bottom: 0;
+      border-radius: 12px 12px 0 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    #jspsych-survey-likert-form .jspsych-survey-likert-opts {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 0 16px;
+      padding: 0 12px 16px;
+      background: #fff;
+      border: 1px solid #dce3ed;
+      border-top: 0;
+      border-radius: 0 0 12px 12px;
+    }
+
+    #jspsych-survey-likert-form .jspsych-survey-likert-opt-label {
+      line-height: 1.45;
+    }
+
+    #jspsych-survey-likert-form .jspsych-survey-likert-opt-label input {
+      transform: scale(1.35);
+      accent-color: #2659a8;
+    }
+
+    /* 結果画面 */
+    .results {
+      max-width: 900px;
+      margin: 24px auto;
+    }
+
+    .chart-wrap {
+      max-width: 620px;
+      height: 360px;
+      margin: 18px auto;
+    }
+
+    .chart-legend {
+      margin: 12px 0 0;
+      color: #526277;
+      font-size: .94rem;
+      text-align: center;
+    }
+
+    .legend-bar,
+    .legend-reference {
+      display: inline-block;
+      width: 24px;
+      margin: 0 6px 3px 16px;
+      vertical-align: middle;
+    }
+
+    .legend-bar {
+      height: 10px;
+      background: #4675c4;
+      border-radius: 3px;
+    }
+
+    .legend-reference {
+      height: 0;
+      border-top: 2px dashed #263a59;
+    }
+
+
+    .scores {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .scores li {
+      padding: 14px;
+      background: #eef4fd;
+      border-radius: 10px;
+    }
+
+    .scores strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1.25rem;
+    }
+
+    .scores small {
+      display: block;
+      margin-top: 4px;
+    }
+
+    .difference {
+      font-weight: 700;
+    }
+
+    .trait-descriptions {
+      margin-top: 32px;
+      text-align: left;
+    }
+
+    .trait-description {
+      margin-top: 12px;
+      padding: 16px 20px;
+      background: #f4f7fb;
+      border-radius: 10px;
+    }
+
+    .trait-description h3 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+    }
+
+    .trait-description p {
+      margin: 0;
+    }
+
+
+    /* 狭い画面では選択肢を縦に並べる */
+    @media (max-width: 700px) {
+      .card {
+        padding: 22px 18px;
+      }
+
+      .scores {
+        grid-template-columns: 1fr;
+      }
+
+      #jspsych-survey-likert-form .jspsych-survey-likert-opts {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      #jspsych-survey-likert-form .jspsych-survey-likert-opts:before {
+        display: none;
+      }
+
+      #jspsych-survey-likert-form .jspsych-survey-likert-opts li {
+        width: 100% !important;
+        padding: 5px 0;
+        text-align: left;
+      }
+
+      #jspsych-survey-likert-form .jspsych-survey-likert-opt-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #jspsych-survey-likert-form .jspsych-survey-likert-opt-label input {
+        position: static;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<script>
+"use strict";
+
+/*
+ * 調整する場所
+ *   1. この下の SCALE_ITEMS: 尺度名・設問文・逆転項目・比較用平均
+ *   2. LIKERT_LABELS: 回答の選択肢
+ *   3. createIntroductionTrial / createScaleTrial: 開始画面と質問画面の文言
+ *   4. renderResults: 結果画面の文言
+ *
+ * assets フォルダーは JsPsych と Chart.js のライブラリです。
+ * 通常の設問・表示内容の変更では編集する必要はありません。
+ */
+
+// 出典：下司忠大・小塩真司（2017）「日本語版 Short Dark Triad (SD3-J) の作成」
+// パーソナリティ研究 26(1), 12–22, Appendix 1.
+// reversed は逆転採点する項目の番号です（1から数えます）。
+const SCALE_ITEMS = [
+  {
+    key: "M",
+    label: "マキャベリアニズム",
+    referenceMean: 3.53,
+    description: "物事や人間関係を、感情よりも自分の目的や利益を基準に考える傾向があります。相手の動きを見て働きかけ方を変える一方、人の善意を素直に信じにくく、冷めた見方をすることがあります。",
+    items: [
+      "他の誰かに自分の秘密を教えないということは賢明なことだ",
+      "自分の思い通りになるように，賢く周りの人々を扱いたい",
+      "とにかく，重要な人物は自分の味方に付けておいたほうが良い",
+      "将来その人が自分の役に立つかもしれないので，人との直接の争いは避けるようにしている",
+      "後になって誰かに対して利用できるような情報に目を配っておくことは賢明なことだ",
+      "誰かに復讐するなら，それに最適な時が来るまでじっと待つべきだ",
+      "自分の良い評判を守るために，他の人に秘密にしなければならないことがある",
+      "自分の計画が，他の誰かの利益ではなく自分の利益になるように取り計らっている",
+      "ほとんどの人々は簡単に踊らされたり，操られたりしてしまうものだ"
+    ],
+    reversed: []
+  },
+  {
+    key: "N",
+    label: "自己愛傾向",
+    referenceMean: 2.27,
+    description: "自分の価値や能力を強く意識し、人から認められ、特別な存在として扱われたい気持ちが表れやすい傾向です。注目や影響力を求め、自分はそれにふさわしいと考えることがあります。",
+    items: [
+      "周りの人は私を生まれながらのリーダーだと思っている",
+      "私は注目の的になることが嫌いだ",
+      "私なしではグループの多くの活動が滞ってしまう",
+      "周りの人がそう言っているので私は特別な人間なのだと思う",
+      "私は地位の高い重要な人物と親しくなるのを好んでいる",
+      "私は褒められると恥ずかしくなってしまう",
+      "私はこれまでに著名な人物にたとえられたことがある",
+      "私は平均的でたいしたことのない人間だ",
+      "私は自分が受けるに値する尊敬を集めるべき人間だ"
+    ],
+    reversed: [2, 6, 8]
+  },
+  {
+    key: "P",
+    label: "サイコパシー傾向",
+    referenceMean: 2.43,
+    description: "感情に動かされにくく、思い切った行動を取りやすい傾向があります。一方で、相手の気持ちや自分の行動への罪悪感を感じにくく、先の結果を十分に考えずに判断することがあります。",
+    items: [
+      "私は目上の人に仕返しや報復をしたいと思うことがある",
+      "私は物騒な状況に飛び込むようなことはしない",
+      "報復は，即座に，冷酷に行うものだ",
+      "私は他人からよく手に負えないと言われる",
+      "私は他人につらく当たっても平気だというのが実際のところだ",
+      "私をからかう者はいつまでもその行為を後悔することになる",
+      "私は人に迷惑をかけるような問題を起こしていない",
+      "私は後先考えずに，ほとんど知らない異性と関係を持つのを楽しむことがある",
+      "私は誰に何を言ってでも，欲しいものを手に入れる"
+    ],
+    reversed: [2, 7]
+  }
+];
+
+const LIKERT_LABELS = [
+  "全くそう思わない",
+  "あまりそう思わない",
+  "どちらともいえない",
+  "ややそう思う",
+  "非常にそう思う"
+];
+
+// ページを移動しても回答を参照できるよう、項目IDをキーにして保持します。
+const answers = {};
+
+// 設問文などをHTMLへ入れる際の特殊文字を無害化します。
+function escapeHtml(text) {
+  const replacements = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  };
+
+  return String(text).replace(/[&<>"']/g, character => replacements[character]);
+}
+
+/* ---------- 画面1：案内 ---------- */
+
+function createIntroductionTrial() {
+  return {
+    type: jsPsychSurveyLikert,
+    preamble: `
+      <div class="card">
+        <div class="eyebrow"></div>
+        <h1>Dark Triad尺度</h1>
+        <p>以下の文章が現在のあなたにどの程度当てはまるか、
+          5つの選択肢から1つ選んでください。</p>
+      </div>
+    `,
+    questions: [],
+    button_label: "回答を始める"
+  };
+}
+
+/* ---------- 画面2〜4：質問 ---------- */
+
+function createQuestion(scale, itemText, itemIndex) {
+  const itemNumber = itemIndex + 1;
+
+  return {
+    name: `${scale.key}${itemNumber}`,
+    prompt: `${itemNumber}. ${escapeHtml(itemText)}`,
+    labels: LIKERT_LABELS,
+    required: true
+  };
+}
+
+function createScaleTrial(scale, scaleIndex) {
+  const isLastScale = scaleIndex === SCALE_ITEMS.length - 1;
+
+  return {
+    type: jsPsychSurveyLikert,
+    preamble: `
+      <div class="card">
+        <div class="eyebrow">${scaleIndex + 1}／${SCALE_ITEMS.length}</div>
+        <h2>${escapeHtml(scale.label)}</h2>
+        <p>各文について、最も近い選択肢を選んでください。各項目の回答は必須です。</p>
+      </div>
+    `,
+    questions: scale.items.map((itemText, index) => createQuestion(scale, itemText, index)),
+    button_label: isLastScale ? "結果を見る" : "次へ",
+    on_finish: trialData => {
+      Object.assign(answers, trialData.response);
+    }
+  };
+}
+
+/* ---------- 採点 ---------- */
+
+function scoreOneItem(scale, itemNumber) {
+  const itemId = `${scale.key}${itemNumber}`;
+  const selectedIndex = answers[itemId];
+
+  // JsPsych の選択肢番号は 0〜4。得点は 1〜5 に直します。
+  const responseValue = selectedIndex + 1;
+
+  if (!Number.isInteger(responseValue) || responseValue < 1 || responseValue > 5) {
+    throw new Error(`回答が見つからないか不正です: ${itemId}`);
+  }
+
+  const isReversed = scale.reversed.includes(itemNumber);
+  return isReversed ? 6 - responseValue : responseValue;
+}
+
+function scoreOneScale(scale) {
+  let total = 0;
+
+  for (let itemNumber = 1; itemNumber <= scale.items.length; itemNumber++) {
+    total += scoreOneItem(scale, itemNumber);
+  }
+
+  return {
+    label: scale.label,
+    total: total,
+    maximum: scale.items.length * LIKERT_LABELS.length,
+    mean: total / scale.items.length,
+    referenceMean: scale.referenceMean
+  };
+}
+
+/* ---------- 結果画面 ---------- */
+
+function formatDifference(difference) {
+  const sign = difference > 0 ? "+" : difference < 0 ? "−" : "±";
+  return `${sign}${Math.abs(difference).toFixed(2)}`;
+}
+
+function createScoreCards(scores) {
+  return scores.map(score => {
+    const difference = score.mean - score.referenceMean;
+
+    return `
+      <li>
+        ${escapeHtml(score.label)}
+        <strong>${score.mean.toFixed(2)} / 5</strong>
+        <small>平均点 ${score.referenceMean.toFixed(2)}</small>
+        <small class="difference">平均との差 ${formatDifference(difference)}</small>
+        <small>合計 ${score.total} / ${score.maximum}</small>
+      </li>
+    `;
+  }).join("");
+}
+
+function createTraitDescriptions() {
+  return SCALE_ITEMS.map(scale => `
+    <article class="trait-description">
+      <h3>${escapeHtml(scale.label)}</h3>
+      <p>${escapeHtml(scale.description)}</p>
+    </article>
+  `).join("");
+}
+
+// 各棒の位置に対応する比較用平均を、縦の破線で描きます。
+const referenceLinePlugin = {
+  id: "referenceLine",
+  afterDatasetsDraw(chart) {
+    const context = chart.ctx;
+    const xAxis = chart.scales.x;
+    const bars = chart.getDatasetMeta(0).data;
+    const scores = chart.options.plugins.referenceLine.scores;
+
+    context.save();
+    context.strokeStyle = "#263a59";
+    context.lineWidth = 2;
+    context.setLineDash([5, 4]);
+
+    scores.forEach((score, index) => {
+      const x = xAxis.getPixelForValue(score.referenceMean);
+      const y = bars[index].y;
+      const halfLineHeight = 35;
+
+      context.beginPath();
+      context.moveTo(x, y - halfLineHeight);
+      context.lineTo(x, y + halfLineHeight);
+      context.stroke();
+    });
+
+    context.restore();
+  }
+};
+
+function drawScoreChart(scores) {
+  const chartElement = document.getElementById("scoreChart");
+
+  new Chart(chartElement, {
+    type: "bar",
+    data: {
+      labels: scores.map(score => score.label),
+      datasets: [{
+        data: scores.map(score => score.mean),
+        backgroundColor: ["#4675c4", "#9b68bb", "#dd8263"],
+        borderRadius: 7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: "y",
+      plugins: {
+        legend: { display: false },
+        referenceLine: { scores: scores },
+        tooltip: {
+          callbacks: {
+            label: context => `平均 ${Number(context.raw).toFixed(2)} / 5`
+          }
+        }
+      },
+      scales: {
+        x: {
+          min: 1,
+          max: 5,
+          ticks: { stepSize: 1 },
+          title: { display: true, text: "平均得点（1〜5）" }
+        },
+        y: {
+          grid: { display: false }
+        }
+      }
+    },
+    plugins: [referenceLinePlugin]
+  });
+}
+
+function renderResults() {
+  const scores = SCALE_ITEMS.map(scoreOneScale);
+  const display = jsPsych.getDisplayElement();
+
+  display.innerHTML = `
+    <div class="results card">
+      <div class="eyebrow"></div>
+      <h1>結果</h1>
+      <p class="muted">あなたの3つの特性の得点です。
+        値が高いほど，その特性が強いことを示します。破線は平均点です。</p>
+      <div class="chart-wrap">
+        <canvas id="scoreChart" role="img" aria-label="3尺度の平均得点の棒グラフ"></canvas>
+      </div>
+      <ul class="scores">${createScoreCards(scores)}</ul>
+      <section class="trait-descriptions" aria-label="3つの特性の特徴">
+        <h2>3つの特性の特徴</h2>
+        ${createTraitDescriptions()}
+      </section>
+      <p class="muted">出典：下司忠大・小塩真司（2017）
+        「日本語版Short Dark Triad（SD3-J）の作成」
+        『パーソナリティ研究』26(1), 12–22.</p>
+    </div>
+  `;
+
+  drawScoreChart(scores);
+}
+
+/* ---------- JsPsych 実行 ---------- */
+
+const jsPsych = initJsPsych({ on_finish: renderResults });
+const timeline = [createIntroductionTrial()];
+
+SCALE_ITEMS.forEach((scale, index) => {
+  timeline.push(createScaleTrial(scale, index));
+});
+
+jsPsych.run(timeline);
+</script>
+</body>
+</html>
